@@ -5,14 +5,18 @@ module.exports = function (options) {
 
     var R = require('ramda'),
         moment = require('moment'),
+
         defaultOptions = {present: Date.now(), date: R.prop('date')},
         config = options || {},
         present = config.present || defaultOptions.present,
+        dategetter = config.date || defaultOptions.date,
+
         presentdate = new Date(present),
         mpresent = moment(present).utc(),
-        dategetter = config.date || defaultOptions.date,
+
         hour = 60 * 60 * 1000,
         day = 24 * hour,
+
         lastDuration,
         frequencyfilter;
 
