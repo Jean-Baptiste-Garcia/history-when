@@ -1,0 +1,20 @@
+{
+  "name": "history-when",
+  "version": "0.0.0",
+  "description": "date filter utility",
+  "main": "index.js",
+  "scripts": {
+    "test": "./node_modules/mocha/bin/mocha --recursive --reporter spec",
+    "watch-test": "./node_modules/mocha/bin/mocha --watch --recursive --reporter spec"
+  },
+  "author": "jbg",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^3.2.0",
+    "mocha": "^2.2.5"
+  },
+  "dependencies": {
+    "moment": "^2.10.6",
+    "ramda": "^0.17.1"
+  }
+}
