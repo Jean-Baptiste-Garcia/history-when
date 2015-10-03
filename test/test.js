@@ -207,3 +207,18 @@ describe('history-when', function () {
         });
     });
 });
+
+describe('readme', function () {
+    it('usage example works', function () {
+        var W = require('../index')(),
+            now = new Date(),
+            afterPresent = new Date(now.getTime() + 1000),
+            oneSecondAgo = new Date(now.getTime() - 1000),
+            sharp24hoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+        W.last24h({date: now }).should.equals(true); // returns true
+        W.last24h({date: afterPresent }).should.equals(false); // returns false
+        W.last24h({date: oneSecondAgo }).should.equals(true); // returns true
+        W.last24h({date: sharp24hoursAgo }).should.equals(false); // returns false
+    });
+});

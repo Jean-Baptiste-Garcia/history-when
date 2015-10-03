@@ -50,7 +50,7 @@ module.exports = function (options) {
         last24h: lastDuration(day),
         lastWeek: lastDuration(7 * day),
         hourly: frequencyfilter(hour),
-        today: R.curry(today),
+        today: today,
         when : when
     };
 };
