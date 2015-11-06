@@ -21,7 +21,57 @@ function keyOnly(item) {
 
 describe('history-when', function () {
 
+
     describe('last24h', function () {
+
+        it('detects dated objects list', function () {
+            var W = require('../index')(),
+                last24hFilter,
+                epsilon = 60 * 1000,
+                now = Date.now(),
+                objects = [
+                    {date: new Date(now - epsilon)},
+                    {date: new Date(now - (oneDay + epsilon))},
+                    {date: new Date(now + (oneDay + epsilon))}];
+
+            W.last24h(objects).should.eql([{date: new Date(now - epsilon)}]);
+        });
+
+        it('detects dated objects list with specific getter', function () {
+
+            var W = require('../index')({date: R.prop('creationDate')}),
+                last24hFilter,
+                epsilon = 60 * 1000,
+                now = Date.now(),
+                objects = [
+                    {creationDate: new Date(now - epsilon)},
+                    {creationDate: new Date(now - (oneDay + epsilon))},
+                    {creationDate: new Date(now + (oneDay + epsilon))}];
+
+            W.last24h(objects).should.eql([ {creationDate: new Date(now - epsilon)}]);
+        });
+
+        it('detects 24 last-hours dated objects list with non default present', function () {
+            var present = Date.now() - 2 * oneDay,
+                W = require('../index')({present: present}),
+                last24hFilter,
+                epsilon = 60 * 10000,
+                today = new Date(present - epsilon),
+                yesterdaysharp = new Date(present - (24 * 60 * 60 * 1000)),
+                yesterday = new Date(present - (24 * 60 * 60 * 1000 + epsilon)),
+                tomorrowsharp = new Date(present + 1),
+                tomorrow = new Date(present + (24 * 60 * 60 * 1000 + epsilon));
+
+            W.last24h([{date: today}]).should.eql([{date: today}]);
+            W.last24h([{date: present}]).should.eql([{date: present}]);
+            W.last24h([{date: yesterday}]).should.eql([]);
+            W.last24h([{date: yesterdaysharp}]).should.eql([]);
+            W.last24h([{date: tomorrow}]).should.eql([]);
+            W.last24h([{date: tomorrowsharp}]).should.eql([]);
+        });
+    });
+
+    describe('last24hObj', function () {
 
         it('detects dated object', function () {
 
@@ -38,20 +88,6 @@ describe('history-when', function () {
             W.last24hObj(tomorrow).should.equals(false, 'tomorrow');
         });
 
-        it('detects dated objects array', function () {
-
-            var W = require('../index')(),
-                last24hFilter,
-                epsilon = 60 * 1000,
-                now = Date.now(),
-                objects = [
-                    {date: new Date(now - epsilon)},
-                    {date: new Date(now - (oneDay + epsilon))},
-                    {date: new Date(now + (oneDay + epsilon))}];
-
-            W.last24h(objects).should.eql([{date: new Date(now - epsilon)}]);
-        });
-
         it('detects dated object with specific getter', function () {
 
             var W = require('../index')({date: R.prop('creationDate')}),
@@ -66,7 +102,6 @@ describe('history-when', function () {
             W.last24hObj(yesterday).should.equals(false, 'yesterday');
             W.last24hObj(tomorrow).should.equals(false, 'tomorrow');
         });
-
 
         it('detects 24 last-hours dated objects with non default present', function () {
             var present = Date.now() - 2 * oneDay,
@@ -267,7 +302,6 @@ describe('history-when', function () {
         });
     });
 
-
     describe('plan2()', function () {
         it('select hourly for 24 last-hours dated objects and daily for last week date objects', function () {
             var now = Date.now(),
@@ -302,26 +336,27 @@ describe('history-when', function () {
     });
 
 
-    describe('today', function () {
+    describe('todayObj', function () {
 
         it('detects dated object', function () {
 
             var present = new Date('1995-12-17T13:24:00'),
                 W = require('../index')({present: present.getTime(), date: R.prop('d')});
 
-            W.today({d: present}).should.equals(true, 'present date');
-            W.today({d: new Date('1995-12-17T10:24:00')}).should.equals(true, '3 hours before present');
-            W.today({d: new Date('1995-12-17T00:00:00')}).should.equals(true, 'beginning of present');
-            W.today({d: new Date('1995-12-17T20:20:20')}).should.equals(true, 'few hours after present');
-            W.today({d: new Date('1995-12-17T23:59:59')}).should.equals(true, 'last second of today');
-            W.today({d: new Date('1995-12-18T00:00:00')}).should.equals(false, 'tomorrow');
-            W.today({d: new Date('1995-12-16T23:59:59')}).should.equals(false, 'yesterday');
-            W.today({d: new Date('1995-12-14T10:24:00')}).should.equals(false, '3 days 3 hours before present');
-            W.today({d: new Date('1995-09-17T10:24:00')}).should.equals(false, '3 months 3 hours before present');
-            W.today({d: new Date('1993-12-17T10:24:00')}).should.equals(false, '3 years 3 hours before present');
+            W.todayObj({d: present}).should.equals(true, 'present date');
+            W.todayObj({d: new Date('1995-12-17T10:24:00')}).should.equals(true, '3 hours before present');
+            W.todayObj({d: new Date('1995-12-17T00:00:00')}).should.equals(true, 'beginning of present');
+            W.todayObj({d: new Date('1995-12-17T20:20:20')}).should.equals(true, 'few hours after present');
+            W.todayObj({d: new Date('1995-12-17T23:59:59')}).should.equals(true, 'last second of today');
+            W.todayObj({d: new Date('1995-12-18T00:00:00')}).should.equals(false, 'tomorrow');
+            W.todayObj({d: new Date('1995-12-16T23:59:59')}).should.equals(false, 'yesterday');
+            W.todayObj({d: new Date('1995-12-14T10:24:00')}).should.equals(false, '3 days 3 hours before present');
+            W.todayObj({d: new Date('1995-09-17T10:24:00')}).should.equals(false, '3 months 3 hours before present');
+            W.todayObj({d: new Date('1993-12-17T10:24:00')}).should.equals(false, '3 years 3 hours before present');
         });
     });
 });
+
 
 describe('readme', function () {
     it('usage example works', function () {
@@ -331,9 +366,9 @@ describe('readme', function () {
             oneSecondAgo = new Date(now.getTime() - 1000),
             sharp24hoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-        W.last24hObj({date: now }).should.equals(true); // returns true
-        W.last24hObj({date: afterPresent }).should.equals(false); // returns false
-        W.last24hObj({date: oneSecondAgo }).should.equals(true); // returns true
-        W.last24hObj({date: sharp24hoursAgo }).should.equals(false); // returns false
+        W.last24hObj({date: now }).should.equals(true);
+        W.last24hObj({date: afterPresent }).should.equals(false);
+        W.last24hObj({date: oneSecondAgo }).should.equals(true);
+        W.last24hObj({date: sharp24hoursAgo }).should.equals(false);
     });
 });

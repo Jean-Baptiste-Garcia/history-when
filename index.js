@@ -36,7 +36,7 @@ module.exports = function (options) {
         return o.filter(lastDurationObj(duration));
     });
 
-    function today(o) {
+    function todayObj(o) {
         var date = moment(dategetter(o)).utc();
         return mpresent.isSame(date, 'day');
     }
@@ -146,7 +146,7 @@ module.exports = function (options) {
         lastWeekObj: lastDurationObj(7 * day),
         hourly: frequencyfilter(hour),
         daily: frequencyfilter(day),
-        today: today,
+        todayObj: todayObj,
         when : when,
         plan: plan,
         plan2: plan2
