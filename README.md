@@ -15,6 +15,10 @@ $ npm install history-when
 
 Usage
 -----
+Most of functions have two versions : for array and for object.
+### Filtering Arrays
+
+### Object Level
 ```javascript
 var W = require('history-when')(),
     now = new Date(),
@@ -22,16 +26,16 @@ var W = require('history-when')(),
     oneSecondAgo = new Date(now.getTime() - 1000),
     sharp24hoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-W.last24h({date: now }) // returns true
-W.last24h({date: afterPresent }) // returns false
-W.last24h({date: oneSecondAgo }) // returns true
-W.last24h({date: sharp24hoursAgo }) // returns false
+W.last24hObj({date: now }) // returns true
+W.last24hObj({date: afterPresent }) // returns false
+W.last24hObj({date: oneSecondAgo }) // returns true
+W.last24hObj({date: sharp24hoursAgo }) // returns false
 ```
 
 ### Configuring present
-By default, present is Date.now() when require('history-when')() is called.
+By default, present is ```Date.now()``` when ```require('history-when')()``` is called.
 
-It is possible to change present date by passing present date :
+It is possible to change present date by passing present date of your choice :
 
 ```javascript
 var W = require('history-when')({present: new Date('1995-12-17T10:24:00')});
