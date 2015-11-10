@@ -200,16 +200,15 @@ describe('history-when', function () {
         });
     });
 
-    describe('when()', function () {
+    describe('filter()', function () {
         it('detects 24 last-hours dated objects and filter one per hour', function () {
             var now = Date.now(),
                 W = require('../index')({present: now}),
                 minute = 60 * 1000,
                 onehour = 60 * minute,
                 yesterday = new Date(now - (oneDay + 2 * minute)),
-                tomorrow = new Date(now + (oneDay + 2 * minute));
-
-            W.when(W.last24hObj, W.hourly)([
+                tomorrow = new Date(now + (oneDay + 2 * minute)),
+                objects = [
                 {key: 'e0', date: now},
                 {key: 'e2', date: yesterday},
                 {key: 'e3', date: tomorrow},
@@ -223,7 +222,9 @@ describe('history-when', function () {
                 {key: 'e-23h', date: now - 23 * onehour},
                 {key: 'e-23h59', date: now - 23 * onehour - 59 * minute},
                 {key: 'e-24h', date: now - 24 * onehour}
-            ].map(toDate)).
+            ].map(toDate);
+
+            W.filter([{when: W.last24hObj, filter: W.hourly}])(objects).
                 map(keyOnly).should.eql(
                     [
                         'e0',
@@ -234,97 +235,30 @@ describe('history-when', function () {
                     ]
                 );
         });
-    });
-
-    describe('plan()', function () {
         it('select hourly for 24 last-hours dated objects and daily for last week date objects', function () {
             var now = Date.now(),
                 W = require('../index')({present: now}),
                 minute = 60 * 1000,
                 hour = 60 * minute,
-                day = 24 * hour;
+                day = 24 * hour,
+                objects = [
+                    {date: new Date(now + day), key: 'tomorrow'},
+                    {date: new Date(now - (4 * hour + 40 * minute)), key: 'h-4.40'},
+                    {date: new Date(now - 5 * hour), key: 'h-5'},
+                    {date: new Date(now - (5 * hour + 10 * minute)), key: 'h-5.10'},
+                    {date: new Date(now - (23 * hour + 10 * minute)), key: 'h-23.10'},
+                    {date: new Date(now - (day + hour)), key: 'd-1-h1'},
+                    {date: new Date(now - (day + 3 * hour)), key: 'd-1-h3'},
+                    {date: new Date(now - (day + 10 * hour)), key: 'd-1-h10'},
+                    {date: new Date(now - (2 * day + 3 * hour)), key: 'd-2-h3'},
+                    {date: new Date(now - (6 * day + 3 * hour)), key: 'd-6-h3'},
+                    {date: new Date(now - (7 * day)), key: 'd-7'}
+                ];
 
-            W.plan([
-                W.when(W.last24hObj, W.hourly),
-                W.when(W.lastWeekObj, W.daily)
-            ])([
-                {date: new Date(now + day), key: 'tomorrow'},
-                {date: new Date(now - (4 * hour + 40 * minute)), key: 'h-4.40'},
-                {date: new Date(now - 5 * hour), key: 'h-5'},
-                {date: new Date(now - (5 * hour + 10 * minute)), key: 'h-5.10'},
-                {date: new Date(now - (23 * hour + 10 * minute)), key: 'h-23.10'},
-                {date: new Date(now - (day + hour)), key: 'd-1-h1'},
-                {date: new Date(now - (day + 3 * hour)), key: 'd-1-h3'},
-                {date: new Date(now - (day + 10 * hour)), key: 'd-1-h10'},
-                {date: new Date(now - (2 * day + 3 * hour)), key: 'd-2-h3'},
-                {date: new Date(now - (6 * day + 3 * hour)), key: 'd-6-h3'},
-                {date: new Date(now - (7 * day)), key: 'd-7'}
-            ]).map(keyOnly).should.eql([
-                'h-4.40',
-                'h-5',
-                'h-23.10',
-                'd-1-h1',
-                'd-2-h3',
-                'd-6-h3'
-            ]);
-        });
-
-        it('sorts timefilters and select hourly for 24 last-hours dated objects and daily for last week date objects', function () {
-            var now = Date.now(),
-                W = require('../index')({present: now}),
-                minute = 60 * 1000,
-                hour = 60 * minute,
-                day = 24 * hour;
-
-            W.plan([
-                W.when(W.lastWeekObj, W.daily),
-                W.when(W.last24hObj, W.hourly)
-            ])([
-                {date: new Date(now + day), key: 'tomorrow'},
-                {date: new Date(now - (4 * hour + 40 * minute)), key: 'h-4.40'},
-                {date: new Date(now - 5 * hour), key: 'h-5'},
-                {date: new Date(now - (5 * hour + 10 * minute)), key: 'h-5.10'},
-                {date: new Date(now - (23 * hour + 10 * minute)), key: 'h-23.10'},
-                {date: new Date(now - (day + hour)), key: 'd-1-h1'},
-                {date: new Date(now - (day + 3 * hour)), key: 'd-1-h3'},
-                {date: new Date(now - (day + 10 * hour)), key: 'd-1-h10'},
-                {date: new Date(now - (2 * day + 3 * hour)), key: 'd-2-h3'},
-                {date: new Date(now - (6 * day + 3 * hour)), key: 'd-6-h3'},
-                {date: new Date(now - (7 * day)), key: 'd-7'}
-            ]).map(keyOnly).should.eql([
-                'h-4.40',
-                'h-5',
-                'h-23.10',
-                'd-1-h1',
-                'd-2-h3',
-                'd-6-h3'
-            ]);
-        });
-    });
-
-    describe('plan2()', function () {
-        it('select hourly for 24 last-hours dated objects and daily for last week date objects', function () {
-            var now = Date.now(),
-                W = require('../index')({present: now}),
-                minute = 60 * 1000,
-                hour = 60 * minute,
-                day = 24 * hour;
-
-            W.plan2([
-                {when: W.last24hObj, then: W.hourly},
-                {when: W.lastWeekObj, then: W.daily}])([
-                {date: new Date(now + day), key: 'tomorrow'},
-                {date: new Date(now - (4 * hour + 40 * minute)), key: 'h-4.40'},
-                {date: new Date(now - 5 * hour), key: 'h-5'},
-                {date: new Date(now - (5 * hour + 10 * minute)), key: 'h-5.10'},
-                {date: new Date(now - (23 * hour + 10 * minute)), key: 'h-23.10'},
-                {date: new Date(now - (day + hour)), key: 'd-1-h1'},
-                {date: new Date(now - (day + 3 * hour)), key: 'd-1-h3'},
-                {date: new Date(now - (day + 10 * hour)), key: 'd-1-h10'},
-                {date: new Date(now - (2 * day + 3 * hour)), key: 'd-2-h3'},
-                {date: new Date(now - (6 * day + 3 * hour)), key: 'd-6-h3'},
-                {date: new Date(now - (7 * day)), key: 'd-7'}
-            ]).map(keyOnly).should.eql([
+            W.filter([
+                {when: W.last24hObj, filter: W.hourly},
+                {when: W.lastWeekObj, filter: W.daily}])
+            (objects).map(keyOnly).should.eql([
                 'h-4.40',
                 'h-5',
                 'h-23.10',

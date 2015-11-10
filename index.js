@@ -59,77 +59,18 @@ module.exports = function (options) {
         }
 
         return (typeof array === 'string')
-            ? objfilter
+            ? objfilter // biniouterie pour plan
             : array.filter(objfilter);
 
     });
 
-    function when(timefilter, frequencyfilter) {
-        var ret = function (array) {
-            return frequencyfilter(array.filter(timefilter));
-        };
-        ret.timefilter = timefilter;                //backdoor to access filter
-        ret.frequencyfilter = frequencyfilter;      //backdoor to access filter
-        return ret;
-    }
-
-    function plan(ws) {
+    function filter(filters) {
         return function (array) {
-            var whens = ws.sort(function (w1, w2) { return w1.timefilter(undefined) - w2.timefilter(undefined); }), // backdoor to get duration
-                timefilters = whens.map(R.prop('timefilter')),
-                frequencyfilters = whens.map(function (w) {return w.frequencyfilter('itemfilter'); }), // backdoor to have individual filter
-                index;
-            return array.filter(function (item) {
-                for (index = 0; index < whens.length; index += 1) {
-                    if (timefilters[index](item)) {
-                        return frequencyfilters[index](item);
-                    }
-                }
-                return false;
-            });
-
-        };
-    }
-
-    function planX(whens) {
-        return function (array) {
-
-            var acc = [],
-                remainder = array,
-                current;
-            // It is a reduce !!!
-
-            return whens.reduce(function (acc, w) {
-                var current = w(remainder, true);
-                remainder = current.rejected;
-                return R.union(acc, current.result);
-            }, []);
-
-
-         //   whens.forEach(function (w) {
-        //        current = w(remainder, true);
-        //        acc = R.union(acc, current.result);
-        //        remainder = current.rejected;
-        //    });
-        //    return acc;
-
-           // var ok0 = whens[0](array, true),
-            //    ok1 = whens[1](ok0.rejected);
-
-            //return R.union(ok0.result, ok1);
-
-        };
-    }
-
-    // more efficient and whens are sortable. better than plan()
-    // could be improved if frequencyfilter could work on item base
-    function plan2(whens) {
-        return function (array) {
-            var thens = whens.map(function (w) {return w.then('x'); }),
+            var thens = filters.map(function (w) {return w.filter('x'); }),
                 index;// get frequency filter at obj level,
             return array.filter(function (item) {
-                for (index = 0; index < whens.length; index += 1) {
-                    if (whens[index].when(item)) {
+                for (index = 0; index < filters.length; index += 1) {
+                    if (filters[index].when(item)) {
                         return thens[index](item);
                     }
                 }
@@ -147,8 +88,6 @@ module.exports = function (options) {
         hourly: frequencyfilter(hour),
         daily: frequencyfilter(day),
         todayObj: todayObj,
-        when : when,
-        plan: plan,
-        plan2: plan2
+        filter: filter
     };
 };
