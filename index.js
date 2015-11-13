@@ -19,26 +19,26 @@ module.exports = function (options) {
 
         lastDurationObj,
         lastDuration,
-        frequencyfilter;
+        frequencyfilter,
+        combinedfilter;
 
 
-
-    lastDurationObj = R.curry(function (duration, o) {
-        if (o === undefined) {
-            return duration;
+    lastDuration = R.curry(function (duration, array) {
+        function filter(item) {
+            var delta = dategetter(item) - present;
+            return delta <= 0 && delta > -duration;
         }
-        var delta = dategetter(o) - present;
-        return delta <= 0 && delta > -duration;
+
+        return array.filter(filter);
     });
 
 
-    lastDuration = R.curry(function (duration, o) {
-        return o.filter(lastDurationObj(duration));
-    });
-
-    function todayObj(o) {
-        var date = moment(dategetter(o)).utc();
-        return mpresent.isSame(date, 'day');
+    function today(array) {
+        function filter(item) {
+            var date = moment(dategetter(item)).utc();
+            return mpresent.isSame(date, 'day');
+        }
+        return array.filter(filter);
     }
 
     function modulo(delta, frequency) {
@@ -57,37 +57,24 @@ module.exports = function (options) {
                     ? false
                     : frequences[bin] = true;
         }
-
-        return (typeof array === 'string')
-            ? objfilter // biniouterie pour plan
-            : array.filter(objfilter);
-
+        return array.filter(objfilter);
     });
 
-    function filter(filters) {
-        return function (array) {
-            var thens = filters.map(function (w) {return w.filter('x'); }),
-                index;// get frequency filter at obj level,
-            return array.filter(function (item) {
-                for (index = 0; index < filters.length; index += 1) {
-                    if (filters[index].when(item)) {
-                        return thens[index](item);
-                    }
-                }
-                return false;
-            });
-
-        };
-    }
+    combinedfilter = R.curry(function (filters, array) {
+        var remainder = array;
+        return filters.reduce(function (out, f) {
+            var selected = f.when(remainder);
+            remainder = R.difference(remainder, selected);
+            return out.concat(f.pick(selected));
+        }, []);
+    });
 
     return {
         last24h: lastDuration(day),
-        last24hObj: lastDurationObj(day),
         lastWeek: lastDuration(7 * day),
-        lastWeekObj: lastDurationObj(7 * day),
         hourly: frequencyfilter(hour),
         daily: frequencyfilter(day),
-        todayObj: todayObj,
-        filter: filter
+        today: today,
+        filter: combinedfilter
     };
 };
