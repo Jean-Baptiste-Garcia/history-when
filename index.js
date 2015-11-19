@@ -9,8 +9,6 @@ module.exports = function (options) {
         defaultOptions = {present: Date.now(), date: R.prop('date')},
         config = options || {},
         present = config.present || defaultOptions.present,
-        dategetter = config.date || defaultOptions.date,
-
         presentdate = new Date(present),
         mpresent = moment(present).utc(),
 
@@ -23,7 +21,7 @@ module.exports = function (options) {
         combinedfilter;
 
 
-    lastDuration = R.curry(function (duration, array) {
+    lastDuration = R.curry(function (duration, dategetter, array) {
         function filter(item) {
             var delta = dategetter(item) - present;
             return delta <= 0 && delta > -duration;
@@ -33,7 +31,7 @@ module.exports = function (options) {
     });
 
 
-    function today(array) {
+    function today(dategetter, array) {
         function filter(item) {
             var date = moment(dategetter(item)).utc();
             return mpresent.isSame(date, 'day');
@@ -47,7 +45,7 @@ module.exports = function (options) {
                 : Math.ceil(delta / frequency);
     }
 
-    frequencyfilter = R.curry(function (frequency, array) {
+    frequencyfilter = R.curry(function (frequency, dategetter, array) {
         var frequences = {};
 
         function objfilter(obj) {
