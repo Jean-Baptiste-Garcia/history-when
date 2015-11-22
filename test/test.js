@@ -184,6 +184,7 @@ describe('history-when', function () {
                     ]
                 );
         });
+
         it('select hourly for 24 last-hours dated objects and daily for last week date objects', function () {
             var now = Date.now(),
                 W = require('../index')({present: now}),
@@ -218,8 +219,8 @@ describe('history-when', function () {
     });
 
 
-    describe('today', function () {
-        it('detects dated objects', function () {
+    describe('filters', function () {
+        it('today detects dated objects', function () {
 
             var present = new Date('1995-12-17T13:24:00'),
                 W = require('../index')({fixedPresent: present, date: R.prop('d')}),
@@ -243,9 +244,30 @@ describe('history-when', function () {
                 {d: new Date('1995-12-17T20:20:20'), desc:  'few hours after present'},
                 {d: new Date('1995-12-17T23:59:59'), desc: 'last second of today'}
             ]);
+        });
+
+        it('skipWeekend', function () {
+            var W = require('../index')(),
+                objects = [
+                    {date: new Date('2015-11-17T11:10:00')},
+                    {date: new Date('2015-11-18T11:01:00')},
+                    {date: new Date('2015-11-19T11:02:00')},
+                    {date: new Date('2015-11-20T11:20:00')},
+                    {date: new Date('2015-11-21T11:03:00')},
+                    {date: new Date('2015-11-22T11:30:00')},
+                    {date: new Date('2015-11-23T11:04:00')}
+                ];
+            W.skipWeekend(objects).should.eql([
+                {date: new Date('2015-11-17T11:10:00')},
+                {date: new Date('2015-11-18T11:01:00')},
+                {date: new Date('2015-11-19T11:02:00')},
+                {date: new Date('2015-11-20T11:20:00')},
+                {date: new Date('2015-11-23T11:04:00')}
+            ]);
 
         });
     });
+
 });
 
 

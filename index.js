@@ -36,6 +36,15 @@ module.exports = function (spec) {
         return array.filter(filter);
     });
 
+    function skipWeekendFilter(o) {
+        var day = dategetter(o).getDay();
+        return day !== 0 && day !== 6;
+    }
+
+    function skipWeekend(array) {
+        return array.filter(skipWeekendFilter);
+    }
+
 
     function today(array) {
         var mpresent = moment(getPresent()).utc();
@@ -81,6 +90,7 @@ module.exports = function (spec) {
         hourly: frequencyfilter(hour),
         daily: frequencyfilter(day),
         today: today,
+        skipWeekend: skipWeekend,
         filter: combinedfilter
     };
 };

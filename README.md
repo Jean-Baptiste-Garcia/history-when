@@ -17,6 +17,7 @@ Usage
 -----
 ### W.last24h
 Retains dated objects whose date is no older than 24 hours ago.
+
 Let us consider present to be ```2015-12-17T13:24:00```
 ```javascript
 
@@ -49,6 +50,9 @@ Retains one object per day.
 
 ### W.today
 Retains all objects whose date is today.
+
+### W.skipWeekend
+Filters out object dated on Saturday or Sunday.
 
 ### Configuring Present
 By default, present is ```Date.now()``` each time a filter is invoked.
