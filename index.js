@@ -5,12 +5,13 @@ var R = require('ramda'),
 module.exports = function (spec) {
     'use strict';
 
-    var defaultOptions = {present: Date.now(), date: function (o) {return o.date; } },
+    var defaultOptions = { date: function (o) {return o.date; } },
         config = spec || {},
         dategetter = config.date || defaultOptions.date,
-        present = config.present || defaultOptions.present,
-        presentdate = new Date(present),
-        mpresent = moment(present).utc(),
+        fixedPresentDate = config.fixedPresent,
+        //present = config.present || defaultOptions.present,
+        //presentdate = new Date(present),
+        //mpresent = moment(present).utc(),
 
         hour = 60 * 60 * 1000,
         day = 24 * hour,
@@ -20,7 +21,13 @@ module.exports = function (spec) {
         frequencyfilter,
         combinedfilter;
 
+
+    function getPresent() {
+        return fixedPresentDate || new Date();
+    }
+
     lastDuration = R.curry(function (duration, array) {
+        var present = getPresent();
         function filter(item) {
             var delta = dategetter(item) - present;
             return delta <= 0 && delta > -duration;
@@ -31,6 +38,7 @@ module.exports = function (spec) {
 
 
     function today(array) {
+        var mpresent = moment(getPresent()).utc();
         function filter(item) {
             var date = moment(dategetter(item)).utc();
             return mpresent.isSame(date, 'day');
@@ -45,7 +53,8 @@ module.exports = function (spec) {
     }
 
     frequencyfilter = R.curry(function (frequency, array) {
-        var frequences = {};
+        var frequences = {},
+            present = getPresent();
 
         function objfilter(obj) {
             var testdate = dategetter(obj),

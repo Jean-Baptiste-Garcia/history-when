@@ -1,8 +1,8 @@
 history-when
 ===============
-history-when is a time filtering API. It filters dated javascript objects based on present. For instance, it is possible to keep all objects whose date correspond to today, or yesterday. It is also possible to keep one object per hour.
+history-when is a set of Date based filters that apply to array of dated objects. For instance, it is possible to keep all objects whose date correspond to today, or yesterday. It is also possible to keep one object per hour.
 
-It has been designed for [history-store](https://github.com/Jean-Baptiste-Garcia/history-store) and [history-trend](https://github.com/Jean-Baptiste-Garcia/history-trend), but it can be used independently. It has been inspired by [Ramda](https://github.com/Jean-Baptiste-Garcia/history-store).
+It has been designed for [history-trend](https://github.com/Jean-Baptiste-Garcia/history-trend), but it can be used independently. It has been inspired by [Ramda](https://github.com/ramda/ramda).
 
 Installation
 ------------
@@ -15,30 +15,48 @@ $ npm install history-when
 
 Usage
 -----
-Most of functions have two versions : for array and for object.
-### Filtering Arrays
-
-### Object Level
+### W.last24h
+Retains dated objects whose date is no older than 24 hours ago.
+Let us consider present to be ```2015-12-17T13:24:00```
 ```javascript
-var W = require('history-when')(),
-    now = new Date(),
-    afterPresent = new Date(now.getTime() + 1000),
-    oneSecondAgo = new Date(now.getTime() - 1000),
-    sharp24hoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-W.last24hObj({date: now }) // returns true
-W.last24hObj({date: afterPresent }) // returns false
-W.last24hObj({date: oneSecondAgo }) // returns true
-W.last24hObj({date: sharp24hoursAgo }) // returns false
+var W = require('history-when)({fixedPresent: new Date('2015-12-17T13:24:00')}),
+    objects = [
+        {date: new Date('2015-12-17T19:24:00'), name: 'after present'},
+        {date: new Date('2015-12-17T13:24:00'), name: 'present' },
+        {date: new Date('2015-12-17T13:23:59'), name: 'one second before present'},
+        {date: new Date('2015-12-16T13:24:00'), name: '24 hours before present'}
+    ];
+
+// issuing
+W.last24h(objects);
+
+// returns
+[
+    {date: new Date('2015-12-17T13:24:00'), name: 'present' },
+    {date: new Date('2015-12-17T13:23:59'), name: 'one second before present'}
+]
+
 ```
+### W.lastWeek
+Retains dated objects whose date is no older than 7 days ago.
 
-### Configuring present
-By default, present is ```Date.now()``` when ```require('history-when')()``` is called.
+### W.hourly
+Retains one object per hour.
 
-It is possible to change present date by passing present date of your choice :
+### W.daily
+Retains one object per day.
+
+### W.today
+Retains all objects whose date is today.
+
+### Configuring Present
+By default, present is ```Date.now()``` each time a filter is invoked.
+
+It is possible to fix present by specifying present date of your choice :
 
 ```javascript
-var W = require('history-when')({present: new Date('1995-12-17T10:24:00')});
+var W = require('history-when')({fixedPresent: new Date('1995-12-17T10:24:00')});
 ```
 
 ### Date objects

@@ -54,7 +54,7 @@ describe('history-when', function () {
 
         it('detects 24 last-hours dated objects list with non default present', function () {
             var present = Date.now() - 2 * oneDay,
-                W = require('../index')({present: present}),
+                W = require('../index')({fixedPresent: present}),
                 last24hFilter,
                 epsilon = 60 * 10000,
                 today = new Date(present - epsilon),
@@ -222,7 +222,7 @@ describe('history-when', function () {
         it('detects dated objects', function () {
 
             var present = new Date('1995-12-17T13:24:00'),
-                W = require('../index')({present: present.getTime(), date: R.prop('d')}),
+                W = require('../index')({fixedPresent: present, date: R.prop('d')}),
                 objects = [
                     {d: present, desc: 'present'},
                     {d: new Date('1995-12-17T10:24:00'), desc: '3 hours before present'},
@@ -251,21 +251,17 @@ describe('history-when', function () {
 
 describe('readme', function () {
     it('usage example works', function () {
-        var W = require('../index')(),
-            now = new Date(),
-            afterPresent = new Date(now.getTime() + 1000),
-            oneSecondAgo = new Date(now.getTime() - 1000),
-            sharp24hoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000),
+        var W = require('../index')({fixedPresent: new Date('2015-12-17T13:24:00')}),
             objects = [
-                {date: afterPresent, name: 'after present'},
-                {date: now, name: 'now' },
-                {date: oneSecondAgo, name: 'one second ago'},
-                {date: sharp24hoursAgo, name: '24 hours ago'}
+                {date: new Date('2015-12-17T19:24:00'), name: 'after present'},
+                {date: new Date('2015-12-17T13:24:00'), name: 'present' },
+                {date: new Date('2015-12-17T13:23:59'), name: 'one second before present'},
+                {date: new Date('2015-12-16T13:24:00'), name: '24 hours before present'}
             ];
 
         W.last24h(objects).should.eql([
-            {date: now, name: 'now' },
-            {date: oneSecondAgo, name: 'one second ago'}
+            {date: new Date('2015-12-17T13:24:00'), name: 'present' },
+            {date: new Date('2015-12-17T13:23:59'), name: 'one second before present'}
         ]);
     });
 });
