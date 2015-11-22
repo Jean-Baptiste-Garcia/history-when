@@ -45,7 +45,6 @@ module.exports = function (spec) {
         return array.filter(skipWeekendFilter);
     }
 
-
     function today(array) {
         var mpresent = moment(getPresent()).utc();
         function filter(item) {
@@ -91,6 +90,7 @@ module.exports = function (spec) {
         daily: frequencyfilter(day),
         today: today,
         skipWeekend: skipWeekend,
+        and: R.pipe,
         filter: combinedfilter
     };
 };

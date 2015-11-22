@@ -1,6 +1,6 @@
 {
   "name": "history-when",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Date Filters utility",
   "main": "index.js",
   "scripts": {
