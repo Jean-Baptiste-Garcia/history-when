@@ -34,13 +34,13 @@ describe('history-when', function () {
                     {date: new Date(now - (oneDay + epsilon))},
                     {date: new Date(now + (oneDay + epsilon))}];
 
-            W.last24h(R.prop('date'), objects).should.eql([{date: new Date(now - epsilon)}]);
-            W.last24h(R.prop('date'))(objects).should.eql([{date: new Date(now - epsilon)}]);
+            W.last24h(objects).should.eql([{date: new Date(now - epsilon)}]);
+            W.last24h(objects).should.eql([{date: new Date(now - epsilon)}]);
         });
 
-        it('detects dated objects list with specific getter', function () {
+        it('detects dated objects list with custom date getter', function () {
 
-            var W = require('../index')(),
+            var W = require('../index')({date: R.prop('creationDate')}),
                 last24hFilter,
                 epsilon = 60 * 1000,
                 now = Date.now(),
@@ -49,7 +49,7 @@ describe('history-when', function () {
                     {creationDate: new Date(now - (oneDay + epsilon))},
                     {creationDate: new Date(now + (oneDay + epsilon))}];
 
-            W.last24h(R.prop('creationDate'), objects).should.eql([ {creationDate: new Date(now - epsilon)}]);
+            W.last24h(objects).should.eql([ {creationDate: new Date(now - epsilon)}]);
         });
 
         it('detects 24 last-hours dated objects list with non default present', function () {
@@ -63,12 +63,12 @@ describe('history-when', function () {
                 tomorrowsharp = new Date(present + 1),
                 tomorrow = new Date(present + (24 * 60 * 60 * 1000 + epsilon));
 
-            W.last24h(R.prop('date'), [{date: today}]).should.eql([{date: today}]);
-            W.last24h(R.prop('date'), [{date: present}]).should.eql([{date: present}]);
-            W.last24h(R.prop('date'), [{date: yesterday}]).should.eql([]);
-            W.last24h(R.prop('date'), [{date: yesterdaysharp}]).should.eql([]);
-            W.last24h(R.prop('date'), [{date: tomorrow}]).should.eql([]);
-            W.last24h(R.prop('date'), [{date: tomorrowsharp}]).should.eql([]);
+            W.last24h([{date: today}]).should.eql([{date: today}]);
+            W.last24h([{date: present}]).should.eql([{date: present}]);
+            W.last24h([{date: yesterday}]).should.eql([]);
+            W.last24h([{date: yesterdaysharp}]).should.eql([]);
+            W.last24h([{date: tomorrow}]).should.eql([]);
+            W.last24h([{date: tomorrowsharp}]).should.eql([]);
         });
     });
 
@@ -76,7 +76,7 @@ describe('history-when', function () {
 
         it('accepts one date per hour and is stateless', function () {
             var now = Date.now(),
-                W = require('../index')({present: now}),
+                W = require('../index')({present: now, date: R.prop('d')}),
                 minute = 60 * 1000,
                 onehour = 60 * minute,
                 yesterday = new Date(now - (oneDay + 2 * minute)),
@@ -94,7 +94,7 @@ describe('history-when', function () {
                     now - 23 * onehour - 59 * minute
                 ].map(msToDate);
 
-            W.hourly(R.prop('d'), dates).should.eql(
+            W.hourly(dates).should.eql(
                 [
                     now, // 'e0',
                     now - onehour, //'e-1h',
@@ -105,7 +105,7 @@ describe('history-when', function () {
             );
 
             // check hourly function is stateless
-            W.hourly(R.prop('d'), dates).should.eql(
+            W.hourly(dates).should.eql(
                 [
                     now, // 'e0',
                     now - onehour, //'e-1h',
@@ -125,7 +125,7 @@ describe('history-when', function () {
                 yesterday = new Date(now - (oneDay + 2 * minute)),
                 tomorrow = new Date(now + (oneDay + 2 * minute));
 
-            W.hourly(R.prop('date'), [
+            W.hourly([
                 {key: 'e0', date: now},
                 {key: 'e-1h', date: now - onehour},
                 {key: 'e-1h30', date: now - onehour - 30 * minute},
@@ -173,7 +173,7 @@ describe('history-when', function () {
                     {key: 'e-24h', date: now - 24 * onehour}
                 ].map(toDate);
 
-            W.filter([{when: W.last24h(R.prop('date')), pick: W.hourly(R.prop('date'))}])(objects).
+            W.filter([{when: W.last24h, pick: W.hourly}])(objects).
                 map(keyOnly).should.eql(
                     [
                         'e0',
@@ -190,7 +190,6 @@ describe('history-when', function () {
                 minute = 60 * 1000,
                 hour = 60 * minute,
                 day = 24 * hour,
-                date = R.prop('date'),
                 objects = [
                     {date: new Date(now + day), key: 'tomorrow'},
                     {date: new Date(now - (4 * hour + 40 * minute)), key: 'h-4.40'},
@@ -206,8 +205,8 @@ describe('history-when', function () {
                 ];
 
             W.filter([
-                {when: W.last24h(date), pick: W.hourly(date)},
-                {when: W.lastWeek(date), pick: W.daily(date)}])(objects).map(keyOnly).should.eql([
+                {when: W.last24h, pick: W.hourly},
+                {when: W.lastWeek, pick: W.daily}])(objects).map(keyOnly).should.eql([
                 'h-4.40',
                 'h-5',
                 'h-23.10',
@@ -223,7 +222,7 @@ describe('history-when', function () {
         it('detects dated objects', function () {
 
             var present = new Date('1995-12-17T13:24:00'),
-                W = require('../index')({present: present.getTime()}),
+                W = require('../index')({present: present.getTime(), date: R.prop('d')}),
                 objects = [
                     {d: present, desc: 'present'},
                     {d: new Date('1995-12-17T10:24:00'), desc: '3 hours before present'},
@@ -237,7 +236,7 @@ describe('history-when', function () {
                     {d: new Date('1993-12-17T10:24:00'), desc:  '3 years 3 hours before present'}
                 ];
 
-            W.today(R.prop('d'), objects).should.eql([
+            W.today(objects).should.eql([
                 {d: present, desc: 'present'},
                 {d: new Date('1995-12-17T10:24:00'), desc: '3 hours before present'},
                 {d: new Date('1995-12-17T00:00:00'), desc: 'beginning of present'},
@@ -263,9 +262,8 @@ describe('readme', function () {
                 {date: oneSecondAgo, name: 'one second ago'},
                 {date: sharp24hoursAgo, name: '24 hours ago'}
             ];
-        function getdate(object) {return object.date; }
 
-        W.last24h(getdate, objects).should.eql([
+        W.last24h(objects).should.eql([
             {date: now, name: 'now' },
             {date: oneSecondAgo, name: 'one second ago'}
         ]);
